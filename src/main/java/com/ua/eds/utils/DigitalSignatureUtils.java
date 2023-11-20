@@ -4,7 +4,6 @@ import com.ua.eds.dto.SignatureKeyDto;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 
-import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
@@ -28,7 +27,7 @@ public class DigitalSignatureUtils {
     }
 
     @SneakyThrows
-    public String sign(String message, String privateKeyString) {
+    public String sign(byte[] data, String privateKeyString) {
         byte[] privateKeyBytes = decodeKey(privateKeyString);
 
         var keySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
@@ -37,8 +36,7 @@ public class DigitalSignatureUtils {
 
         Signature signature = Signature.getInstance(SIGNATURE_ALGORITHM);
         signature.initSign(privateKey);
-
-        byte[] data = message.getBytes(StandardCharsets.UTF_8);
+        ;
         signature.update(data);
 
         byte[] digitalSignatureBytes = signature.sign();
@@ -46,7 +44,7 @@ public class DigitalSignatureUtils {
     }
 
     @SneakyThrows
-    public boolean verify(String message, String signature, String publicKeyString) {
+    public boolean verify(byte[] data, String signature, String publicKeyString) {
         byte[] publicKeyBytes = decodeKey(publicKeyString);
 
         var keySpec = new X509EncodedKeySpec(publicKeyBytes);
@@ -56,7 +54,6 @@ public class DigitalSignatureUtils {
         Signature sig = Signature.getInstance(SIGNATURE_ALGORITHM);
         sig.initVerify(publicKey);
 
-        byte[] data = message.getBytes(StandardCharsets.UTF_8);
         sig.update(data);
 
         byte[] signatureBytes = decodeKey(signature);
@@ -71,12 +68,4 @@ public class DigitalSignatureUtils {
         return Base64.getEncoder().encodeToString(keyBytes);
     }
 
-    @SneakyThrows
-    public static void main(String[] args) {
-        var keys = generateKeys();
-
-        String signature = sign("Test data", keys.privateKey());
-
-        System.out.println(verify("Test data", signature, keys.publicKey()));
-    }
 }
