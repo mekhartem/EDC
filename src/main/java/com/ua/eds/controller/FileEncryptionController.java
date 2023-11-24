@@ -1,6 +1,7 @@
 package com.ua.eds.controller;
 
-import com.ua.eds.service.FileVerificationService;
+import com.ua.eds.service.FileEncryptionService;
+import com.ua.eds.utils.EncryptionUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,28 +10,26 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import com.ua.eds.utils.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/edc")
-public class FileVerificationController {
+@RequestMapping("/encrypt")
+public class FileEncryptionController {
 
-    private final FileVerificationService fileVerificationService;
+    private final FileEncryptionService fileEncryptionService;
 
     @GetMapping("/keys")
     public ResponseEntity<?> generateKeys() {
-        return ResponseEntity.ok(DigitalSignatureUtils.generateKeys());
+        return ResponseEntity.ok(EncryptionUtils.generateSecretKey());
     }
 
-    @PostMapping("/sign")
+    @PostMapping("/encode")
     public ResponseEntity<?> signFile(@RequestParam("file") MultipartFile file, String privateKey) {
-        return ResponseEntity.ok(fileVerificationService.signFile(file, privateKey));
+        return ResponseEntity.ok(fileEncryptionService.encryptFile(file, privateKey));
     }
 
-    @PostMapping("/verify")
-    public ResponseEntity<?> verifyFile(@RequestParam("file") MultipartFile file, String signature, String publicKey) {
-        return ResponseEntity.ok(fileVerificationService.verifyFile(file, signature, publicKey));
+    @PostMapping("/decode")
+    public ResponseEntity<?> verifyFile(@RequestParam("file") MultipartFile file, String privateKey) {
+        return ResponseEntity.ok(fileEncryptionService.decryptFile(file, privateKey));
     }
-
 }

@@ -7,7 +7,6 @@ import lombok.experimental.UtilityClass;
 import java.security.*;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Base64;
 
 @UtilityClass
 public class DigitalSignatureUtils {
@@ -21,14 +20,14 @@ public class DigitalSignatureUtils {
         keyPairGen.initialize(1024);
         KeyPair keyPair = keyPairGen.generateKeyPair();
 
-        String publicKey = encodeKey(keyPair.getPublic().getEncoded());
-        String privateKey = encodeKey(keyPair.getPrivate().getEncoded());
+        String publicKey = Base64Utils.encodeKey(keyPair.getPublic().getEncoded());
+        String privateKey = Base64Utils.encodeKey(keyPair.getPrivate().getEncoded());
         return new SignatureKeyDto(publicKey, privateKey);
     }
 
     @SneakyThrows
     public String sign(byte[] data, String privateKeyString) {
-        byte[] privateKeyBytes = decodeKey(privateKeyString);
+        byte[] privateKeyBytes = Base64Utils.decodeKey(privateKeyString);
 
         var keySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
         var keyFactory = KeyFactory.getInstance(ALGORITHM_RSA);
@@ -40,12 +39,12 @@ public class DigitalSignatureUtils {
         signature.update(data);
 
         byte[] digitalSignatureBytes = signature.sign();
-        return encodeKey(digitalSignatureBytes);
+        return Base64Utils.encodeKey(digitalSignatureBytes);
     }
 
     @SneakyThrows
     public boolean verify(byte[] data, String signature, String publicKeyString) {
-        byte[] publicKeyBytes = decodeKey(publicKeyString);
+        byte[] publicKeyBytes = Base64Utils.decodeKey(publicKeyString);
 
         var keySpec = new X509EncodedKeySpec(publicKeyBytes);
         var keyFactory = KeyFactory.getInstance(ALGORITHM_RSA);
@@ -56,16 +55,8 @@ public class DigitalSignatureUtils {
 
         sig.update(data);
 
-        byte[] signatureBytes = decodeKey(signature);
+        byte[] signatureBytes = Base64Utils.decodeKey(signature);
         return sig.verify(signatureBytes);
-    }
-
-    private byte[] decodeKey(String keyString) {
-        return Base64.getDecoder().decode(keyString);
-    }
-
-    private String encodeKey(byte[] keyBytes) {
-        return Base64.getEncoder().encodeToString(keyBytes);
     }
 
 }

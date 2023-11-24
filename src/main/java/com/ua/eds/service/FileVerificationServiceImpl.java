@@ -2,44 +2,38 @@ package com.ua.eds.service;
 
 import com.ua.eds.dto.FileSignatureDto;
 import com.ua.eds.dto.FileVerificationDto;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.UUID;
 
 import com.ua.eds.utils.*;
 
 @Service
+@RequiredArgsConstructor
 public class FileVerificationServiceImpl implements FileVerificationService {
 
-    private static final String UPLOAD_FOLDER = "uploads/";
+    private final FileService fileService;
 
     @Override
     @SneakyThrows
     public FileSignatureDto signFile(MultipartFile file, String privateKey) {
-        byte[] fileBytes = file.getBytes();
-
-        String fileId = UUID.randomUUID().toString();
-        Path filePath = Paths.get(UPLOAD_FOLDER + fileId);
-        Files.write(filePath, fileBytes);
+        var filePath = fileService.saveFile(file);
 
         byte[] fileData = Files.readAllBytes(filePath);
 
-        return new FileSignatureDto(fileId, DigitalSignatureUtils.sign(fileData, privateKey));
+        return new FileSignatureDto(filePath.getFileName().toString(), DigitalSignatureUtils.sign(fileData, privateKey));
     }
 
     @Override
     @SneakyThrows
     public FileVerificationDto verifyFile(MultipartFile file, String signature, String publicKey) {
-        String fileId = file.getOriginalFilename();
-        Path filePath = Paths.get(UPLOAD_FOLDER + fileId);
+        var filePath = fileService.getFile(file.getOriginalFilename());
 
         byte[] fileData = Files.readAllBytes(filePath);
 
-        return new FileVerificationDto(fileId, DigitalSignatureUtils.verify(fileData, signature, publicKey));
+        return new FileVerificationDto(filePath.getFileName().toString(), DigitalSignatureUtils.verify(fileData, signature, publicKey));
     }
 }
