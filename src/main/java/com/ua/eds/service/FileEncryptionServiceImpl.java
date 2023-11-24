@@ -38,8 +38,8 @@ public class FileEncryptionServiceImpl implements FileEncryptionService {
 
         List<String> lines = Files.readAllLines(filePath);
         lines.forEach(line -> {
-            String encodedLine = EncryptionUtils.decrypt(line, privateKey);
-            lines.set(lines.indexOf(line), encodedLine);
+            String decodedLine = EncryptionUtils.decrypt(line, privateKey);
+            lines.set(lines.indexOf(line), decodedLine);
         });
 
         var resultPath = fileService.saveFile(lines);

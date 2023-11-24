@@ -24,12 +24,12 @@ public class FileEncryptionController {
     }
 
     @PostMapping("/encode")
-    public ResponseEntity<?> signFile(@RequestParam("file") MultipartFile file, String privateKey) {
+    public ResponseEntity<?> encryptFile(@RequestParam("file") MultipartFile file, String privateKey) {
         return ResponseEntity.ok(fileEncryptionService.encryptFile(file, privateKey));
     }
 
     @PostMapping("/decode")
-    public ResponseEntity<?> verifyFile(@RequestParam("file") MultipartFile file, String privateKey) {
+    public ResponseEntity<?> decryptFile(@RequestParam("file") MultipartFile file, String privateKey) {
         return ResponseEntity.ok(fileEncryptionService.decryptFile(file, privateKey));
     }
 }
